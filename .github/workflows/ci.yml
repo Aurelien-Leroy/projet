@@ -1,4 +1,4 @@
-name: Terraform CI/CD with Vercel
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,44 +7,9 @@ on:
   pull_request:
 
 jobs:
-  terraform:
-    name: "Terraform Infrastructure"
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📥 Cloner le repository
-        uses: actions/checkout@v3
-
-      - name: 🌍 Installer Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: "1.5.0"
-
-      - name: 🏗 Initialiser Terraform
-        run: terraform init
-        working-directory: ./terraform  # Change ce chemin si besoin
-
-      - name: ✅ Vérifier le format et valider le code
-        run: |
-          terraform fmt -check
-          terraform validate
-        working-directory: ./terraform
-
-      - name: 📊 Générer le plan Terraform
-        run: terraform plan -out=tfplan
-        working-directory: ./terraform
-        env:
-          TF_VAR_example: "value"  # Remplace par tes variables si besoin
-
-      - name: 🚀 Appliquer le plan Terraform
-        if: github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve tfplan
-        working-directory: ./terraform
-
   ci:
-    name: "Build & Test"
+    name: 🔍 Tests & Build
     runs-on: ubuntu-latest
-    needs: terraform  # Attendre que Terraform termine avant de lancer CI
 
     steps:
       - name: 📥 Cloner le repository
@@ -53,13 +18,13 @@ jobs:
       - name: 📦 Installer les dépendances
         run: npm install
 
-      - name: ✅ Lancer les tests
+      - name: 🧪 Lancer les tests
         run: npm test
 
-  deploy:
-    name: "Deploy to Vercel"
+  cd:
+    name: 🚀 Déploiement sur Vercel
+    needs: ci  # Attend que la CI soit terminée avant de déployer
     runs-on: ubuntu-latest
-    needs: ci  # Attendre que les tests CI passent avant de déployer
 
     steps:
       - name: 📥 Cloner le repository
